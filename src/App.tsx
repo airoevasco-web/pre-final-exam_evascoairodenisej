@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import type { FormEvent, ChangeEvent } from 'react'
 import type { Product } from './types'
@@ -240,168 +239,264 @@ function App() {
   function renderProductCards(items: Product[]) {
     if (items.length === 0) {
       return (
-        <p className="col-span-full rounded-xl bg-white p-8 text-center text-slate-500">
-          No products found in this category.
-        </p>
+        <div className="col-span-full rounded-2xl border border-dashed border-pink-300 bg-white p-10 text-center">
+          <p className="text-lg font-bold text-pink-700">
+            No products found
+          </p>
+          <p className="mt-2 text-sm text-slate-500">
+            Try another category or add a new product.
+          </p>
+        </div>
       )
     }
 
-    return items.map((product) => {
-      const cartQuantity = product.cartQuantity ?? 0
-      const availableQuantity = product.quantity - cartQuantity
-
-      return (
-        <article
-          key={product.id}
-          className="overflow-hidden rounded-2xl border border-pink-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
-        >
+    return items.map((product) => (
+      <article
+        key={product.id}
+        className="overflow-hidden rounded-2xl border border-pink-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+      >
+        <div className="h-52 overflow-hidden bg-pink-50">
           <img
             src={product.image}
             alt={product.name}
-            className="h-48 w-full object-cover"
+            className="h-full w-full object-cover transition duration-300 hover:scale-105"
             onError={(event) => {
-              event.currentTarget.onerror = null
-              event.currentTarget.src =
-                'https://placehold.co/600x400/fce7f3/9d174d?text=Product'
+              event.currentTarget.style.display = 'none'
             }}
           />
+        </div>
 
-          <div className="p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-pink-600">
+        <div className="p-5">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <span className="rounded-full bg-pink-100 px-3 py-1 text-xs font-bold text-pink-700">
               {product.category}
-            </p>
+            </span>
 
-            <h3 className="mt-1 text-lg font-bold text-slate-800">
-              {product.name}
-            </h3>
+            <span className="text-sm text-amber-500">
+              ★ {product.rating.toFixed(1)}
+            </span>
+          </div>
 
-            <p className="mt-2 text-xl font-black text-pink-700">
-              {money(product.price)}
-            </p>
+          <h3 className="text-lg font-black text-slate-800">
+            {product.name}
+          </h3>
 
-            <p className="mt-1 text-xs text-slate-500">
-              Inventory value: {money(product.price * product.quantity)}
-            </p>
+          <p className="mt-2 line-clamp-2 min-h-10 text-sm text-slate-500">
+            {product.description}
+          </p>
 
-            <div className="mt-3">
-              {product.quantity === 0 ? (
-                <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
-                  Sold Out
-                </span>
-              ) : product.quantity < 5 ? (
-                <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
-                  Low Stock: {product.quantity}
-                </span>
-              ) : (
-                <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">
-                  In Stock: {product.quantity}
-                </span>
-              )}
-            </div>
+          <p className="mt-3 text-xl font-black text-pink-700">
+            {money(product.price)}
+          </p>
 
+          <p className="mt-1 text-xs text-slate-500">
+            Stock: {product.quantity}
+          </p>
+
+          <p className="mt-1 text-xs text-slate-500">
+            Inventory value: {money(product.price * product.quantity)}
+          </p>
+
+          <div className="mt-4 grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setSelectedProduct(product)}
-              className="mt-4 w-full rounded-lg border border-pink-300 px-4 py-2 font-semibold text-pink-700 hover:bg-pink-50"
+              className="rounded-xl border border-pink-300 px-3 py-2 text-sm font-bold text-pink-700 transition hover:bg-pink-50"
             >
-              View Product Details
+              View Details
             </button>
 
             <button
               type="button"
               onClick={() => addToCart(product.id)}
-              disabled={availableQuantity <= 0}
-              className="mt-2 w-full rounded-lg bg-pink-600 px-4 py-2 font-bold text-white hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+              disabled={
+                product.quantity <= (product.cartQuantity ?? 0)
+              }
+              className="rounded-xl bg-pink-600 px-3 py-2 text-sm font-bold text-white transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
-              {availableQuantity <= 0 ? 'Unavailable' : 'Add to Cart'}
+              Add to Cart
             </button>
           </div>
-        </article>
-      )
-    })
+        </div>
+      </article>
+    ))
   }
 
-  if (selectedProduct) {
-    const currentProduct =
-      products.find((product) => product.id === selectedProduct.id) ??
-      selectedProduct
-
-    return (
-      <ProductDetail
-        key={currentProduct.id}
-        product={currentProduct}
-        onClose={() => setSelectedProduct(null)}
-        onAddToCart={addToCart}
-      />
-    )
-  }
+  const featuredProducts = products.slice(0, 3)
 
   return (
     <div className="min-h-screen bg-pink-50 text-slate-800">
-      <header className="bg-white shadow-sm">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-5">
-          <div>
-            <h1 className="text-2xl font-black text-pink-700">
-              Pretty Much Everything
-            </h1>
-            <p className="text-sm text-slate-500">
-              Beauty finds, cute fits, and everyday essentials.
-            </p>
-          </div>
+      <header className="sticky top-0 z-30 border-b border-pink-100 bg-white/95 shadow-sm backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-4">
+          <a href="#home" className="text-2xl font-black text-pink-700">
+            Pretty Much Everything
+            <span className="ml-1 text-pink-400">♥</span>
+          </a>
 
-          <button
-            type="button"
-            onClick={() => {
-              setCartOpen((current) => !current)
-              setCheckoutOpen(false)
-              setCheckoutMessage('')
-            }}
-            className="rounded-xl bg-pink-600 px-5 py-3 font-bold text-white hover:bg-pink-700"
-          >
-            {cartOpen ? 'Close Cart' : `My Cart (${cartCount})`}
-          </button>
+          <nav className="flex flex-wrap items-center gap-4 text-sm font-semibold">
+            <a href="#home" className="hover:text-pink-600">
+              Home
+            </a>
+            <a href="#featured" className="hover:text-pink-600">
+              Featured
+            </a>
+            <a href="#products" className="hover:text-pink-600">
+              Products
+            </a>
+            <a href="#add-product" className="hover:text-pink-600">
+              Add Product
+            </a>
+
+            <button
+              type="button"
+              onClick={() => {
+                setCartOpen(!cartOpen)
+                setCheckoutOpen(false)
+              }}
+              className="rounded-full bg-pink-600 px-5 py-2.5 font-bold text-white transition hover:bg-pink-700"
+            >
+              Cart ({cartCount})
+            </button>
+          </nav>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl space-y-8 px-5 py-8">
+      <main id="home" className="mx-auto max-w-7xl space-y-16 px-5 py-10">
+        <section className="grid items-center gap-8 overflow-hidden rounded-3xl bg-gradient-to-br from-pink-200 via-rose-100 to-white p-8 md:grid-cols-2 md:p-14">
+          <div>
+            <span className="inline-block rounded-full bg-white px-4 py-2 text-sm font-bold text-pink-700 shadow-sm">
+              A little bit of everything
+            </span>
+
+            <h1 className="mt-5 text-4xl font-black leading-tight text-pink-800 md:text-6xl">
+              Pretty finds for your everyday life.
+            </h1>
+
+            <p className="mt-5 max-w-xl leading-7 text-slate-600">
+              Discover beauty, fashion, and everyday essentials in one place.
+              Find something you love and make it yours.
+            </p>
+
+            <a
+              href="#products"
+              className="mt-7 inline-block rounded-full bg-pink-600 px-7 py-3 font-bold text-white shadow-md transition hover:bg-pink-700"
+            >
+              Explore Products
+            </a>
+          </div>
+
+          <div className="rounded-3xl bg-white/70 p-5 shadow-lg">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="overflow-hidden rounded-2xl bg-pink-100">
+                <img
+                  src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80"
+                  alt="Everyday accessories"
+                  className="h-48 w-full object-cover"
+                />
+              </div>
+
+              <div className="mt-8 overflow-hidden rounded-2xl bg-rose-100">
+                <img
+                  src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=700&q=80"
+                  alt="Beauty products"
+                  className="h-48 w-full object-cover"
+                />
+              </div>
+
+              <div className="col-span-2 rounded-2xl bg-white p-4 text-center">
+                <p className="text-lg font-black text-pink-700">
+                  Your next favorite find
+                </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Shop your style. Love your finds.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {selectedProduct && (
+          <ProductDetail
+            key={selectedProduct.id}
+            product={
+              products.find((product) => product.id === selectedProduct.id) ??
+              selectedProduct
+            }
+            onClose={() => setSelectedProduct(null)}
+            onAddToCart={addToCart}
+          />
+        )}
+
         {cartOpen && (
-          <section className="rounded-2xl border border-pink-200 bg-white p-5 shadow-sm">
-            <h2 className="text-xl font-black text-pink-700">
-              Shopping Cart
-            </h2>
+          <section className="rounded-3xl border border-pink-200 bg-white p-6 shadow-lg">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-2xl font-black text-pink-700">
+                  Your Shopping Cart
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Review your selected items before checkout.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setCartOpen(false)}
+                className="rounded-full border border-pink-200 px-4 py-2 text-sm font-bold text-pink-700 hover:bg-pink-50"
+              >
+                Close Cart
+              </button>
+            </div>
 
             {cartItems.length === 0 ? (
-              <p className="mt-3 text-slate-500">Your cart is empty.</p>
+              <div className="mt-6 rounded-2xl bg-pink-50 p-8 text-center">
+                <p className="text-lg font-bold text-pink-700">
+                  Your cart is empty.
+                </p>
+                <p className="mt-2 text-sm text-slate-500">
+                  Add something you love from our products.
+                </p>
+              </div>
             ) : (
-              <div className="mt-4 space-y-4">
+              <div className="mt-6 space-y-4">
                 {cartItems.map((product) => (
                   <div
                     key={product.id}
-                    className="flex flex-wrap items-center justify-between gap-3 border-b border-pink-100 pb-4"
+                    className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-pink-100 p-4"
                   >
-                    <div>
-                      <p className="font-bold">{product.name}</p>
-                      <p className="text-sm text-slate-500">
-                        {money(product.price)} × {product.cartQuantity}
-                      </p>
-                      <p className="text-sm font-semibold text-pink-700">
-                        Subtotal:{' '}
-                        {money(product.price * (product.cartQuantity ?? 0))}
-                      </p>
+                    <div className="flex min-w-0 items-center gap-4">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="h-20 w-20 rounded-xl bg-pink-50 object-cover"
+                      />
+
+                      <div>
+                        <h3 className="font-bold text-slate-800">
+                          {product.name}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-500">
+                          {money(product.price)} each
+                        </p>
+                        <p className="mt-1 font-bold text-pink-700">
+                          {money(
+                            product.price * (product.cartQuantity ?? 0),
+                          )}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <button
                         type="button"
                         onClick={() => removeFromCart(product.id)}
-                        aria-label={`Remove one ${product.name}`}
-                        className="rounded-lg border border-pink-300 px-3 py-1 font-bold text-pink-700"
+                        className="h-9 w-9 rounded-full border border-pink-200 font-bold text-pink-700 hover:bg-pink-50"
                       >
                         −
                       </button>
 
-                      <span className="min-w-6 text-center font-bold">
-                        {product.cartQuantity}
+                      <span className="min-w-5 text-center font-bold">
+                        {product.cartQuantity ?? 0}
                       </span>
 
                       <button
@@ -410,8 +505,7 @@ function App() {
                         disabled={
                           (product.cartQuantity ?? 0) >= product.quantity
                         }
-                        aria-label={`Add one ${product.name}`}
-                        className="rounded-lg border border-pink-300 px-3 py-1 font-bold text-pink-700 disabled:opacity-40"
+                        className="h-9 w-9 rounded-full bg-pink-600 font-bold text-white hover:bg-pink-700 disabled:bg-slate-300"
                       >
                         +
                       </button>
@@ -419,209 +513,193 @@ function App() {
                   </div>
                 ))}
 
-                <div className="flex items-center justify-between">
-                  <span className="font-bold">Cart Total</span>
-                  <span className="text-xl font-black text-pink-700">
-                    {money(cartTotal)}
-                  </span>
-                </div>
+                <div className="flex flex-wrap items-center justify-between gap-4 border-t border-pink-100 pt-5">
+                  <p className="text-lg font-bold text-slate-700">
+                    Total: <span className="text-pink-700">{money(cartTotal)}</span>
+                  </p>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCheckoutOpen(true)
-                    setCheckoutMessage('')
-                  }}
-                  className="w-full rounded-lg bg-pink-600 px-5 py-3 font-bold text-white hover:bg-pink-700"
-                >
-                  Proceed to Checkout →
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCheckoutOpen(true)
+                      setCartOpen(false)
+                      setCheckoutMessage('')
+                    }}
+                    className="rounded-full bg-pink-600 px-7 py-3 font-bold text-white hover:bg-pink-700"
+                  >
+                    Proceed to Checkout
+                  </button>
+                </div>
               </div>
             )}
           </section>
         )}
 
         {checkoutOpen && (
-          <section className="rounded-2xl border border-pink-200 bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-black text-pink-700">Checkout</h2>
-            <p className="mt-2 text-sm text-slate-500">
-              Review your order and enter your delivery details.
-            </p>
-
-            <div className="mt-5 rounded-xl bg-pink-50 p-4">
-              <h3 className="font-bold">Order Summary</h3>
-
-              {cartItems.map((product) => (
-                <div
-                  key={product.id}
-                  className="mt-3 flex justify-between gap-4 text-sm"
-                >
-                  <span>
-                    {product.name} × {product.cartQuantity}
-                  </span>
-                  <span className="font-semibold">
-                    {money(product.price * (product.cartQuantity ?? 0))}
-                  </span>
-                </div>
-              ))}
-
-              <div className="mt-4 flex justify-between border-t border-pink-200 pt-3">
-                <span className="font-bold">Total Amount</span>
-                <span className="text-xl font-black text-pink-700">
-                  {money(cartTotal)}
-                </span>
+          <section className="rounded-3xl border border-pink-200 bg-white p-6 shadow-lg">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-2xl font-black text-pink-700">
+                  Checkout
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Enter your details to complete your order.
+                </p>
               </div>
-            </div>
 
-            {checkoutMessage && (
-              <p
-                role="status"
-                className="mt-4 rounded-lg bg-green-100 p-4 text-sm font-semibold text-green-800"
-              >
-                {checkoutMessage}
-              </p>
-            )}
-
-            {cartItems.length > 0 ? (
-              <form onSubmit={handleCheckout} className="mt-5 space-y-4">
-                <div>
-                  <label className="mb-1 block text-sm font-semibold">
-                    Full Name
-                  </label>
-                  <input
-                    value={customerName}
-                    onChange={(event) => setCustomerName(event.target.value)}
-                    placeholder="Enter your full name"
-                    className="w-full rounded-lg border border-pink-200 px-3 py-2"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-sm font-semibold">
-                    Delivery Address
-                  </label>
-                  <textarea
-                    value={customerAddress}
-                    onChange={(event) => setCustomerAddress(event.target.value)}
-                    placeholder="Enter your delivery address"
-                    rows={3}
-                    className="w-full rounded-lg border border-pink-200 px-3 py-2"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-sm font-semibold">
-                    Contact Number
-                  </label>
-                  <input
-                    type="tel"
-                    value={customerContact}
-                    onChange={(event) => setCustomerContact(event.target.value)}
-                    placeholder="Enter your contact number"
-                    className="w-full rounded-lg border border-pink-200 px-3 py-2"
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    type="submit"
-                    className="flex-1 rounded-lg bg-pink-600 px-5 py-3 font-bold text-white hover:bg-pink-700"
-                  >
-                    Place Order
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCheckoutOpen(false)
-                      setCheckoutMessage('')
-                    }}
-                    className="rounded-lg border border-pink-300 px-5 py-3 font-bold text-pink-700 hover:bg-pink-50"
-                  >
-                    Back to Cart
-                  </button>
-                </div>
-              </form>
-            ) : (
               <button
                 type="button"
                 onClick={() => {
                   setCheckoutOpen(false)
-                  setCheckoutMessage('')
+                  setCartOpen(true)
                 }}
-                className="mt-5 rounded-lg border border-pink-300 px-5 py-3 font-bold text-pink-700"
+                className="rounded-full border border-pink-200 px-4 py-2 text-sm font-bold text-pink-700 hover:bg-pink-50"
               >
-                Continue Shopping
+                Back to Cart
               </button>
-            )}
+            </div>
+
+            <div className="mt-6 rounded-2xl bg-pink-50 p-5">
+              <h3 className="font-black text-pink-700">Order Summary</h3>
+
+              {cartItems.length === 0 ? (
+                <p className="mt-3 text-sm text-slate-500">
+                  No items in your cart.
+                </p>
+              ) : (
+                <div className="mt-3 space-y-3">
+                  {cartItems.map((product) => (
+                    <div
+                      key={product.id}
+                      className="flex justify-between gap-3 text-sm"
+                    >
+                      <span>
+                        {product.name} × {product.cartQuantity}
+                      </span>
+                      <span className="font-bold">
+                        {money(
+                          product.price * (product.cartQuantity ?? 0),
+                        )}
+                      </span>
+                    </div>
+                  ))}
+
+                  <div className="flex justify-between border-t border-pink-200 pt-3 font-black">
+                    <span>Total</span>
+                    <span className="text-pink-700">
+                      {money(cartTotal)}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <form onSubmit={handleCheckout} className="mt-6 space-y-4">
+              <div>
+                <label
+                  htmlFor="customerName"
+                  className="mb-1 block text-sm font-bold"
+                >
+                  Full Name
+                </label>
+                <input
+                  id="customerName"
+                  value={customerName}
+                  onChange={(event) => setCustomerName(event.target.value)}
+                  className="w-full rounded-xl border border-pink-200 px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                  placeholder="Enter your full name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="customerAddress"
+                  className="mb-1 block text-sm font-bold"
+                >
+                  Delivery Address
+                </label>
+                <textarea
+                  id="customerAddress"
+                  value={customerAddress}
+                  onChange={(event) => setCustomerAddress(event.target.value)}
+                  className="w-full rounded-xl border border-pink-200 px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                  placeholder="Enter your complete address"
+                  rows={3}
+                  required
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="customerContact"
+                  className="mb-1 block text-sm font-bold"
+                >
+                  Contact Number
+                </label>
+                <input
+                  id="customerContact"
+                  type="tel"
+                  value={customerContact}
+                  onChange={(event) => setCustomerContact(event.target.value)}
+                  className="w-full rounded-xl border border-pink-200 px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                  placeholder="Enter your contact number"
+                  required
+                />
+              </div>
+
+              {checkoutMessage && (
+                <p
+                  role="status"
+                  className={`rounded-xl p-4 text-sm font-semibold ${
+                    checkoutMessage.startsWith('Order placed')
+                      ? 'bg-green-50 text-green-700'
+                      : 'bg-red-50 text-red-700'
+                  }`}
+                >
+                  {checkoutMessage}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={cartItems.length === 0}
+                className="w-full rounded-full bg-pink-600 px-6 py-3 font-bold text-white hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                Place Order
+              </button>
+            </form>
           </section>
         )}
 
-        {/* 1. Featured Products */}
-        <section className="rounded-2xl border border-pink-200 bg-white p-5 shadow-sm">
-          <div className="mb-5">
-            <h2 className="text-2xl font-black text-pink-700">
-              Featured Products
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Check out our featured beauty finds, cute fits, and everyday essentials.
-            </p>
+        <section id="featured">
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-widest text-pink-500">
+                Handpicked for you
+              </p>
+              <h2 className="mt-2 text-3xl font-black text-pink-800">
+                Featured Products
+              </h2>
+              <p className="mt-2 text-slate-500">
+                Check out some of our favorite finds.
+              </p>
+            </div>
+
+            <a
+              href="#products"
+              className="font-bold text-pink-700 hover:text-pink-900"
+            >
+              View All Products →
+            </a>
           </div>
 
-          {products.length === 0 ? (
-            <p className="rounded-xl bg-pink-50 p-8 text-center text-slate-500">
-              No featured products available yet.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {products.slice(0, 3).map((product) => (
-                <article
-                  key={product.id}
-                  className="overflow-hidden rounded-2xl border border-pink-100 bg-pink-50 transition hover:-translate-y-1 hover:shadow-lg"
-                >
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="h-56 w-full object-cover"
-                    onError={(event) => {
-                      event.currentTarget.onerror = null
-                      event.currentTarget.src =
-                        'https://placehold.co/600x400/fce7f3/9d174d?text=Product'
-                    }}
-                  />
-
-                  <div className="p-4">
-                    <span className="inline-block rounded-full bg-pink-100 px-3 py-1 text-xs font-bold text-pink-700">
-                      {product.category}
-                    </span>
-
-                    <h3 className="mt-3 text-lg font-bold text-slate-800">
-                      {product.name}
-                    </h3>
-
-                    <p className="mt-2 text-xl font-black text-pink-700">
-                      {money(product.price)}
-                    </p>
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedProduct(product)}
-                      className="mt-4 w-full rounded-lg border border-pink-300 bg-white px-4 py-2 font-semibold text-pink-700 hover:bg-pink-100"
-                    >
-                      View Product Details
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {renderProductCards(featuredProducts)}
+          </div>
         </section>
 
-        {/* 2. Our Products */}
-        <section>
+        <section id="products">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className="text-2xl font-black text-pink-700">
@@ -637,13 +715,25 @@ function App() {
             </span>
           </div>
 
+          <div className="mb-5 rounded-xl border border-pink-200 bg-white p-4 shadow-sm">
+            <p className="text-sm font-semibold text-slate-500">
+              Total Inventory Value
+            </p>
+            <p className="mt-1 text-2xl font-black text-pink-700">
+              {money(inventoryTotal)}
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              Total value of all products currently in stock.
+            </p>
+          </div>
+
           <div className="mb-6 flex flex-wrap gap-2">
             {categories.map((category) => (
               <button
                 key={category}
                 type="button"
                 onClick={() => setSelectedCategory(category)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                className={`rounded-full px-4 py-2 text-sm font-bold transition ${
                   selectedCategory === category
                     ? 'bg-pink-600 text-white'
                     : 'border border-pink-200 bg-white text-pink-700 hover:bg-pink-100'
@@ -654,175 +744,219 @@ function App() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {renderProductCards(filteredProducts)}
           </div>
         </section>
 
-        {/* 3. Add a New Product — moved to the end */}
-        <section className="rounded-2xl border border-pink-200 bg-white p-6 shadow-sm">
-          <h2 className="text-2xl font-black text-pink-700">
-            Add a New Product
-          </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Add a product to your store inventory.
-          </p>
-
-          {formMessage && (
-            <p
-              role="status"
-              className={`mt-4 rounded-lg p-3 text-sm font-semibold ${
-                formSuccess
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-red-100 text-red-700'
-              }`}
-            >
-              {formMessage}
+        <section
+          id="add-product"
+          className="rounded-3xl border border-pink-200 bg-white p-6 shadow-sm md:p-8"
+        >
+          <div className="mb-6">
+            <p className="text-sm font-bold uppercase tracking-widest text-pink-500">
+              Product Management
             </p>
-          )}
+            <h2 className="mt-2 text-2xl font-black text-pink-800">
+              Add a New Product
+            </h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Fill in the details below to add a product to your store.
+            </p>
+          </div>
 
-          <form
-            onSubmit={handleAddProduct}
-            className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2"
-          >
-            <div>
-              <label className="mb-1 block text-sm font-semibold">
-                Product Name
-              </label>
-              <input
-                name="name"
-                value={newProduct.name}
-                onChange={handleInputChange}
-                placeholder="Enter product name"
-                className="w-full rounded-lg border border-pink-200 px-3 py-2"
-                required
-              />
+          <form onSubmit={handleAddProduct} className="space-y-5">
+            <div className="grid gap-5 md:grid-cols-2">
+              <div>
+                <label
+                  htmlFor="image"
+                  className="mb-1 block text-sm font-bold"
+                >
+                  Image URL
+                </label>
+                <input
+                  id="image"
+                  name="image"
+                  type="url"
+                  value={newProduct.image}
+                  onChange={handleInputChange}
+                  placeholder="https://example.com/image.jpg"
+                  className="w-full rounded-xl border border-pink-200 px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                  required
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="name"
+                  className="mb-1 block text-sm font-bold"
+                >
+                  Product Name
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  value={newProduct.name}
+                  onChange={handleInputChange}
+                  placeholder="Enter product name"
+                  className="w-full rounded-xl border border-pink-200 px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                  required
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="category"
+                  className="mb-1 block text-sm font-bold"
+                >
+                  Category
+                </label>
+                <input
+                  id="category"
+                  name="category"
+                  value={newProduct.category}
+                  onChange={handleInputChange}
+                  placeholder="e.g. Skincare, Makeup, Clothes"
+                  className="w-full rounded-xl border border-pink-200 px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                  required
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="price"
+                  className="mb-1 block text-sm font-bold"
+                >
+                  Price (₱)
+                </label>
+                <input
+                  id="price"
+                  name="price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={newProduct.price}
+                  onChange={handleInputChange}
+                  placeholder="0.00"
+                  className="w-full rounded-xl border border-pink-200 px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                  required
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="quantity"
+                  className="mb-1 block text-sm font-bold"
+                >
+                  Quantity
+                </label>
+                <input
+                  id="quantity"
+                  name="quantity"
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={newProduct.quantity}
+                  onChange={handleInputChange}
+                  placeholder="0"
+                  className="w-full rounded-xl border border-pink-200 px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                  required
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="rating"
+                  className="mb-1 block text-sm font-bold"
+                >
+                  Rating (0–5)
+                </label>
+                <input
+                  id="rating"
+                  name="rating"
+                  type="number"
+                  min="0"
+                  max="5"
+                  step="0.1"
+                  value={newProduct.rating}
+                  onChange={handleInputChange}
+                  placeholder="5"
+                  className="w-full rounded-xl border border-pink-200 px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                  required
+                />
+              </div>
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-semibold">
-                Category
-              </label>
-              <input
-                name="category"
-                value={newProduct.category}
-                onChange={handleInputChange}
-                placeholder="Skincare, Makeup, Clothes"
-                className="w-full rounded-lg border border-pink-200 px-3 py-2"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-semibold">
-                Image URL
-              </label>
-              <input
-                name="image"
-                type="url"
-                value={newProduct.image}
-                onChange={handleInputChange}
-                placeholder="https://example.com/product.jpg"
-                className="w-full rounded-lg border border-pink-200 px-3 py-2"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-semibold">
-                Price (₱)
-              </label>
-              <input
-                name="price"
-                type="number"
-                min="0"
-                step="0.01"
-                value={newProduct.price}
-                onChange={handleInputChange}
-                placeholder="Enter price"
-                className="w-full rounded-lg border border-pink-200 px-3 py-2"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-semibold">
-                Quantity
-              </label>
-              <input
-                name="quantity"
-                type="number"
-                min="0"
-                step="1"
-                value={newProduct.quantity}
-                onChange={handleInputChange}
-                placeholder="Enter stock quantity"
-                className="w-full rounded-lg border border-pink-200 px-3 py-2"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-semibold">
-                Rating (0–5)
-              </label>
-              <input
-                name="rating"
-                type="number"
-                min="0"
-                max="5"
-                step="0.1"
-                value={newProduct.rating}
-                onChange={handleInputChange}
-                placeholder="e.g. 4.5"
-                className="w-full rounded-lg border border-pink-200 px-3 py-2"
-                required
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="mb-1 block text-sm font-semibold">
+              <label
+                htmlFor="description"
+                className="mb-1 block text-sm font-bold"
+              >
                 Description
               </label>
               <textarea
+                id="description"
                 name="description"
                 value={newProduct.description}
                 onChange={handleInputChange}
                 placeholder="Describe the product"
                 rows={3}
-                className="w-full rounded-lg border border-pink-200 px-3 py-2"
+                className="w-full rounded-xl border border-pink-200 px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
                 required
               />
             </div>
 
-            <div className="md:col-span-2">
-              <label className="mb-1 block text-sm font-semibold">
-                Specification
+            <div>
+              <label
+                htmlFor="specification"
+                className="mb-1 block text-sm font-bold"
+              >
+                Specifications
               </label>
               <textarea
+                id="specification"
                 name="specification"
                 value={newProduct.specification}
                 onChange={handleInputChange}
                 placeholder="Enter product specifications"
-                rows={2}
-                className="w-full rounded-lg border border-pink-200 px-3 py-2"
+                rows={3}
+                className="w-full rounded-xl border border-pink-200 px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
                 required
               />
             </div>
 
+            {formMessage && (
+              <p
+                role="status"
+                className={`rounded-xl p-4 text-sm font-semibold ${
+                  formSuccess
+                    ? 'bg-green-50 text-green-700'
+                    : 'bg-red-50 text-red-700'
+                }`}
+              >
+                {formMessage}
+              </p>
+            )}
+
             <button
               type="submit"
-              className="rounded-lg bg-pink-600 px-5 py-3 font-bold text-white hover:bg-pink-700 md:col-span-2"
+              className="w-full rounded-full bg-pink-600 px-6 py-3 font-bold text-white transition hover:bg-pink-700 sm:w-auto"
             >
               Add Product
             </button>
           </form>
         </section>
-
-        <footer className="py-4 text-center text-sm text-slate-500">
-          © {new Date().getFullYear()} Pretty Much Everything
-        </footer>
       </main>
+
+      <footer className="mt-12 bg-pink-800 px-5 py-8 text-center text-sm text-white">
+        <p className="text-lg font-black">Pretty Much Everything ♥</p>
+        <p className="mt-2 text-pink-100">
+          Your everyday finds, all in one place.
+        </p>
+        <p className="mt-4 text-pink-200">
+          © {new Date().getFullYear()} Pretty Much Everything. All rights reserved.
+        </p>
+      </footer>
     </div>
   )
 }
